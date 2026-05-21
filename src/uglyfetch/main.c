@@ -4,25 +4,39 @@
 #include <string.h>
 #include <locale.h>
 
+const char *debian[] = {
+    "        #:..        ",
+    "    :####*++#####   ",
+    "   ###         +##: ",
+    "  #:             #  ",
+    " #-              ## ",
+    " #               ## ",
+    " #      #       .#  ",
+    " #       #     #:   ",
+    " ##        *        ",
+    "  ##                ",
+    "   ##               ",
+    "     ##             ",
+    "        *=          ",
+    NULL
+};
+
 int main() {
     setlocale(LC_ALL, "");
-
-    printf("\n");
 
     char *user = getenv("USER");
     if (user == NULL) {
         user = "?";
     }
-    printf("\U0001F464 %s\n", user);
 
     // DISTRO
     FILE *file = fopen("/etc/os-release", "r");
+    char distro_name[256] = "Unknown Linux Distribution";
     if (file == NULL) {
         perror("Failed to open /etc/os-release");
     }
     else {
         char line[256];
-        char distro_name[256] = "Unknown Linux Distribution";
 
         while (fgets(line, sizeof(line), file)) {
             if (strncmp(line, "NAME=", 5) == 0) {
@@ -43,29 +57,34 @@ int main() {
         }
 
         fclose(file);
-        printf("\U0001F4BB %s\n", distro_name);
     }
 
     // CPU CORES
     long num_cores = sysconf(_SC_NPROCESSORS_ONLN);
-    if (num_cores > 0) {
-        printf("\u2699 %ld\n", num_cores);
-    } else {
+    if (num_cores <= 0) {
         perror("Failed to get CPU count");
     }
 
     // RAM
     long page_size = sysconf(_SC_PAGE_SIZE);
     long num_pages = sysconf(_SC_PHYS_PAGES);
-
+    double ram = 0;
     if (page_size > 0 && num_pages > 0) {
         long long total_ram = (long long)num_pages * page_size;
-        
-        printf("\U0001F40F %.2f GB\n", (double)total_ram / (1024 * 1024 * 1024));
+        ram = (double)total_ram / (1024 * 1024 * 1024);
     } else {
         perror("Failed to get RAM info");
     }
 
+    for (int i = 0; debian[i] != NULL; i++) {
+        printf("%s\n", debian[i]);
+    }
+
+    printf("\n");
+    printf("\U0001F464 %s\n", user);
+    printf("\U0001F4BB %s\n", distro_name);
+    printf("\u2699 %ld\n", num_cores);
+    printf("\U0001F40F %.2f GB\n", ram);
     printf("\n");
 
     return 0;
