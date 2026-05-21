@@ -15,10 +15,12 @@ void print_distro_art(const char *distro_name) {
         art = debian_ascii;
     } else if (strncmp(distro_name, "Ubuntu", 6) == 0) {
         art = ubuntu_ascii;
-    } else if (strncmp(distro_name, "Arch", 4) == 0) {
+    } else if (strncmp(distro_name, "Arch Linux", 10) == 0) {
         art = arch_ascii;
     } else if (strncmp(distro_name, "Fedora", 6) == 0) {
         art = fedora_ascii;
+    } else if (strncmp(distro_name, "Linux Mint", 10) == 0) {
+        art = mint_ascii;
     }
 
     if (art == NULL) return;
