@@ -4,22 +4,29 @@
 #include <string.h>
 #include <locale.h>
 
-const char *debian[] = {
-    "        #:..        ",
-    "    :####*++#####   ",
-    "   ###         +##: ",
-    "  #:             #  ",
-    " #-              ## ",
-    " #               ## ",
-    " #      #       .#  ",
-    " #       #     #:   ",
-    " ##        *        ",
-    "  ##                ",
-    "   ##               ",
-    "     ##             ",
-    "        *=          ",
-    NULL
-};
+#include "distros.h"
+
+#define MAX_BUFFER 256
+
+void print_distro_art(const char *distro_name) {
+    char **art = linux_ascii;
+
+    if (strncmp(distro_name, "Debian", 6) == 0) {
+        art = debian_ascii;
+    } else if (strncmp(distro_name, "Ubuntu", 6) == 0) {
+        art = ubuntu_ascii;
+    } else if (strncmp(distro_name, "Arch", 4) == 0) {
+        art = arch_ascii;
+    } else if (strncmp(distro_name, "Fedora", 6) == 0) {
+        art = fedora_ascii;
+    }
+
+    if (art == NULL) return;
+
+    for (int i = 0; art[i] != NULL; i++) {
+        printf("%s\n", art[i]);
+    }
+}
 
 int main() {
     setlocale(LC_ALL, "");
@@ -31,12 +38,12 @@ int main() {
 
     // DISTRO
     FILE *file = fopen("/etc/os-release", "r");
-    char distro_name[256] = "Unknown Linux Distribution";
+    char distro_name[MAX_BUFFER] = "Unknown";
     if (file == NULL) {
         perror("Failed to open /etc/os-release");
     }
     else {
-        char line[256];
+        char line[MAX_BUFFER];
 
         while (fgets(line, sizeof(line), file)) {
             if (strncmp(line, "NAME=", 5) == 0) {
@@ -76,9 +83,7 @@ int main() {
         perror("Failed to get RAM info");
     }
 
-    for (int i = 0; debian[i] != NULL; i++) {
-        printf("%s\n", debian[i]);
-    }
+    print_distro_art(distro_name);
 
     printf("\n");
     printf("\U0001F464 %s\n", user);
