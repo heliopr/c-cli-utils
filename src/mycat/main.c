@@ -7,8 +7,11 @@
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
-        printf("Usage: %s <file1> [file2 ...]\n", argv[0]);
-        return EXIT_FAILURE;
+        char text[BUFFER_SIZE];
+        while (fgets(text, sizeof(BUFFER_SIZE), stdin) != NULL) {
+            printf("%s", text);
+        }
+        return EXIT_SUCCESS;
     }
 
     bool newline = false;
@@ -33,9 +36,8 @@ int main(int argc, char *argv[]) {
         }
         fclose(fptr);
 
-        if (newline) {
+        if (newline)
             printf("\n");
-        }
     }
 
     return EXIT_SUCCESS;
