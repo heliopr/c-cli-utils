@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <locale.h>
+#include <ctype.h>
 
 #include "distros.h"
 
@@ -32,6 +33,15 @@ void get_gpu_name(char *buffer, size_t size) {
     if (fptr) {
         if (fgets(buffer, size, fptr) != NULL) {
             buffer[strcspn(buffer, "\n")] = '\0';
+
+            char *start = buffer;
+            while (isspace((unsigned char)*start)) {
+                start++;
+            }
+
+            if (start != buffer) {
+                memmove(buffer, start, strlen(start) + 1);
+            }
         }
         pclose(fptr);
     }
