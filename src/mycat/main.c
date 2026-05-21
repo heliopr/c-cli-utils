@@ -3,13 +3,13 @@
 #include <stdbool.h>
 #include <string.h>
 
-#define BUFFER_SIZE 255
+#define BUFFER_SIZE 256
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
-        char text[BUFFER_SIZE];
-        while (fgets(text, sizeof(BUFFER_SIZE), stdin) != NULL) {
-            printf("%s", text);
+        char buffer[BUFFER_SIZE];
+        while (fgets(buffer, BUFFER_SIZE, stdin) != NULL) {
+            printf("%s", buffer);
         }
         return EXIT_SUCCESS;
     }
@@ -25,8 +25,7 @@ int main(int argc, char *argv[]) {
         FILE *fptr = fopen(argv[i], "r");
 
         if (fptr == NULL) {
-            fprintf(stderr, "Error opening file '%s': ", argv[i]);
-            perror(NULL);
+            perror(argv[i]);
             continue;
         }
 
