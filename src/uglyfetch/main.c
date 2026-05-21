@@ -8,6 +8,65 @@
 
 #define MAX_BUFFER 256
 
+void get_cpu_name(char *buffer, size_t size) {
+    FILE *fptr = fopen("/proc/cpuinfo", "r");
+    if (!fptr) return;
+
+    char line[256];
+    while (fgets(line, sizeof(line), fptr)) {
+        if (strncmp(line, "model name", 10) == 0) {
+            char *name = strchr(line, ':');
+            if (name) {
+                name += 2;
+                name[strcspn(name, "\n")] = '\0';
+                strncpy(buffer, name, size - 1);
+                break;
+            }
+        }
+    }
+    fclose(fptr);
+}
+
+void get_gpu_name(char *buffer, size_t size) {
+    FILE *fptr = popen("lspci | grep -i 'vga\\|3d' | cut -d ':' -f3", "r");
+    if (fptr) {
+        if (fgets(buffer, size, fptr) != NULL) {
+            buffer[strcspn(buffer, "\n")] = '\0';
+        }
+        pclose(fptr);
+    }
+}
+
+void get_distro_name(char *buffer, size_t size) {
+    FILE *file = fopen("/etc/os-release", "r");
+    if (file == NULL) {
+        perror("Failed to open /etc/os-release");
+    }
+    else {
+        char line[MAX_BUFFER];
+
+        while (fgets(line, sizeof(line), file)) {
+            if (strncmp(line, "NAME=", 5) == 0) {
+                char *value = line + 5;
+                
+                value[strcspn(value, "\r\n")] = '\0';
+            
+                if (value[0] == '"') {
+                    value++;
+                    if (value[strlen(value) - 1] == '"') {
+                        value[strlen(value) - 1] = '\0';
+                    }
+                }
+        
+                strncpy(buffer, value, size - 1);
+                break;
+            }
+        }
+
+        fclose(file);
+    }
+}
+
 void print_distro_art(const char *distro_name) {
     char **art = linux_ascii;
 
@@ -38,35 +97,8 @@ int main() {
         user = "?";
     }
 
-    // DISTRO
-    FILE *file = fopen("/etc/os-release", "r");
     char distro_name[MAX_BUFFER] = "Unknown";
-    if (file == NULL) {
-        perror("Failed to open /etc/os-release");
-    }
-    else {
-        char line[MAX_BUFFER];
-
-        while (fgets(line, sizeof(line), file)) {
-            if (strncmp(line, "NAME=", 5) == 0) {
-                char *value = line + 5;
-                
-                value[strcspn(value, "\r\n")] = '\0';
-            
-                if (value[0] == '"') {
-                    value++;
-                    if (value[strlen(value) - 1] == '"') {
-                        value[strlen(value) - 1] = '\0';
-                    }
-                }
-        
-                strncpy(distro_name, value, sizeof(distro_name) - 1);
-                break;
-            }
-        }
-
-        fclose(file);
-    }
+    get_distro_name(distro_name, MAX_BUFFER);
 
     // CPU CORES
     long num_cores = sysconf(_SC_NPROCESSORS_ONLN);
@@ -87,11 +119,19 @@ int main() {
 
     print_distro_art(distro_name);
 
+    char cpu_name[MAX_BUFFER] = "Unknown";
+    get_cpu_name(cpu_name, MAX_BUFFER);
+
+    char gpu_name[MAX_BUFFER] = "Unknown";
+    get_gpu_name(gpu_name, MAX_BUFFER);
+
     printf("\n");
     printf("\U0001F464 %s\n", user);
     printf("\U0001F4BB %s\n", distro_name);
-    printf("\u2699 %ld\n", num_cores);
-    printf("\U0001F40F %.2f GB\n", ram);
+    printf("\u2699 %ld CPU Cores\n", num_cores);
+    printf("\U0001F40F %.2fGB RAM\n", ram);
+    printf("CPU: %s\n", cpu_name);
+    printf("GPU: %s\n", gpu_name);
     printf("\n");
 
     return 0;
