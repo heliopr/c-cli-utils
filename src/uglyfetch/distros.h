@@ -1,6 +1,8 @@
 #ifndef DISTROS_H
 #define DISTROS_H
 
+#define MAX_ASCII_LINES 20
+
 char *debian_ascii[] = {
     "        #:..        ",
     "    :####*++#####   ",

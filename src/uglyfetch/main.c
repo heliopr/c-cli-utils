@@ -21,6 +21,7 @@ void get_cpu_name(char *buffer, size_t size) {
                 name += 2;
                 name[strcspn(name, "\n")] = '\0';
                 strncpy(buffer, name, size - 1);
+                buffer[size - 1] = '\0';
                 break;
             }
         }
@@ -69,6 +70,7 @@ void get_distro_name(char *buffer, size_t size) {
                 }
         
                 strncpy(buffer, value, size - 1);
+                buffer[size-1] = '\0';
                 break;
             }
         }
@@ -94,7 +96,7 @@ void print_distro_art(const char *distro_name) {
 
     if (art == NULL) return;
 
-    for (int i = 0; art[i] != NULL; i++) {
+    for (int i = 0; i < MAX_ASCII_LINES && art[i] != NULL; i++) {
         printf("%s\n", art[i]);
     }
 }
