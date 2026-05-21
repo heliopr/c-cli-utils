@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
+#include <string.h>
 
 #define BUFFER_SIZE 255
 
@@ -9,13 +11,19 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
+    bool newline = false;
+
     for (int i = 1; i < argc; i++) {
-        FILE *fptr;
-        fptr = fopen(argv[i], "r");
+        if (strcmp(argv[i], "-nl") == 0 || strcmp(argv[i], "-newline") == 0) {
+            newline = true;
+            continue;
+        }
+
+        FILE *fptr = fopen(argv[i], "r");
 
         if (fptr == NULL) {
             fprintf(stderr, "Error opening file '%s': ", argv[i]);
-            perror("");
+            perror(NULL);
             continue;
         }
 
@@ -23,8 +31,11 @@ int main(int argc, char *argv[]) {
         while (fgets(buffer, BUFFER_SIZE, fptr) != NULL) {
             printf("%s", buffer);
         }
-        
         fclose(fptr);
+
+        if (newline) {
+            printf("\n");
+        }
     }
 
     return EXIT_SUCCESS;
