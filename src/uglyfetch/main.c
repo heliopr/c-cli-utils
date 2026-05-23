@@ -110,7 +110,7 @@ int main() {
     char gpu_name[MAX_BUFFER] = "Unknown";
     get_gpu_name(gpu_name, MAX_BUFFER);
 
-    // IMPORTE: UPDATE THIS
+    // IMPORTANT: UPDATE THIS
     #define NUM_STATS 6
     char stats[NUM_STATS][MAX_BUFFER];
     snprintf(stats[0], MAX_BUFFER, "\U0001F464 %s", user);
