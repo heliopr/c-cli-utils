@@ -52,8 +52,7 @@ void get_distro_name(char *buffer, size_t size) {
     FILE *file = fopen("/etc/os-release", "r");
     if (file == NULL) {
         perror("Failed to open /etc/os-release");
-    }
-    else {
+    } else {
         char line[MAX_BUFFER];
 
         while (fgets(line, sizeof(line), file)) {
@@ -79,9 +78,49 @@ void get_distro_name(char *buffer, size_t size) {
     }
 }
 
-void print_distro_art(const char *distro_name) {
-    char **art = linux_ascii;
+int main() {
+    setlocale(LC_ALL, "");
 
+    char *user = getenv("USER");
+    if (user == NULL) {
+        user = "?";
+    }
+
+    char distro_name[MAX_BUFFER] = "Unknown";
+    get_distro_name(distro_name, MAX_BUFFER);
+
+    long num_cores = sysconf(_SC_NPROCESSORS_ONLN);
+    if (num_cores <= 0) {
+        perror("Failed to get CPU count");
+    }
+
+    long page_size = sysconf(_SC_PAGE_SIZE);
+    long num_pages = sysconf(_SC_PHYS_PAGES);
+    double ram = 0;
+    if (page_size > 0 && num_pages > 0) {
+        long long total_ram = (long long)num_pages * page_size;
+        ram = (double)total_ram / (1024 * 1024 * 1024);
+    } else {
+        perror("Failed to get RAM info");
+    }
+
+    char cpu_name[MAX_BUFFER] = "Unknown";
+    get_cpu_name(cpu_name, MAX_BUFFER);
+
+    char gpu_name[MAX_BUFFER] = "Unknown";
+    get_gpu_name(gpu_name, MAX_BUFFER);
+
+    // IMPORTE: UPDATE THIS
+    #define NUM_STATS 6
+    char stats[NUM_STATS][MAX_BUFFER];
+    snprintf(stats[0], MAX_BUFFER, "\U0001F464 %s", user);
+    snprintf(stats[1], MAX_BUFFER, "\U0001F4BB %s", distro_name);
+    snprintf(stats[2], MAX_BUFFER, "\u2699 %ld CPU Cores", num_cores);
+    snprintf(stats[3], MAX_BUFFER, "\U0001F40F %.2fGB RAM", ram);
+    snprintf(stats[4], MAX_BUFFER, "CPU: %s", cpu_name);
+    snprintf(stats[5], MAX_BUFFER, "GPU: %s", gpu_name);
+
+    char **art = linux_ascii;
     if (strncmp(distro_name, "Debian", 6) == 0) {
         art = debian_ascii;
     } else if (strncmp(distro_name, "Ubuntu", 6) == 0) {
@@ -94,56 +133,32 @@ void print_distro_art(const char *distro_name) {
         art = mint_ascii;
     }
 
-    if (art == NULL) return;
-
+    int max_art_width = 0;
+    int art_lines = 0;
     for (int i = 0; i < MAX_ASCII_LINES && art[i] != NULL; i++) {
-        printf("%s\n", art[i]);
-    }
-}
-
-int main() {
-    setlocale(LC_ALL, "");
-
-    char *user = getenv("USER");
-    if (user == NULL) {
-        user = "?";
+        int len = strlen(art[i]);
+        if (len > max_art_width) {
+            max_art_width = len;
+        }
+        art_lines++;
     }
 
-    char distro_name[MAX_BUFFER] = "Unknown";
-    get_distro_name(distro_name, MAX_BUFFER);
-
-    // CPU CORES
-    long num_cores = sysconf(_SC_NPROCESSORS_ONLN);
-    if (num_cores <= 0) {
-        perror("Failed to get CPU count");
-    }
-
-    // RAM
-    long page_size = sysconf(_SC_PAGE_SIZE);
-    long num_pages = sysconf(_SC_PHYS_PAGES);
-    double ram = 0;
-    if (page_size > 0 && num_pages > 0) {
-        long long total_ram = (long long)num_pages * page_size;
-        ram = (double)total_ram / (1024 * 1024 * 1024);
-    } else {
-        perror("Failed to get RAM info");
-    }
-
-    print_distro_art(distro_name);
-
-    char cpu_name[MAX_BUFFER] = "Unknown";
-    get_cpu_name(cpu_name, MAX_BUFFER);
-
-    char gpu_name[MAX_BUFFER] = "Unknown";
-    get_gpu_name(gpu_name, MAX_BUFFER);
-
+    int max_lines = (art_lines > NUM_STATS) ? art_lines : NUM_STATS;
+    
     printf("\n");
-    printf("\U0001F464 %s\n", user);
-    printf("\U0001F4BB %s\n", distro_name);
-    printf("\u2699 %ld CPU Cores\n", num_cores);
-    printf("\U0001F40F %.2fGB RAM\n", ram);
-    printf("CPU: %s\n", cpu_name);
-    printf("GPU: %s\n", gpu_name);
+    for (int i = 0; i < max_lines; i++) {
+        if (i < art_lines) {
+            printf("%-*s   ", max_art_width, art[i]); 
+        } else {
+            printf("%-*s   ", max_art_width, ""); 
+        }
+
+        if (i < NUM_STATS) {
+            printf("%s", stats[i]);
+        }
+        
+        printf("\n");
+    }
     printf("\n");
 
     return 0;
